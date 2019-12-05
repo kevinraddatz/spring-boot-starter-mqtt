@@ -1,0 +1,120 @@
+buildscript {
+    ext {
+        junitVersion = '5.5.2'
+        lombokVersion = '1.18.10'
+        mockitoVersion = '3.1.0'
+        mqttVersion = '1.2.2'
+        springBootVersion = '2.2.1.RELEASE'
+    }
+}
+
+plugins {
+    id 'com.bmuschko.nexus' version '2.3.1'
+    id 'io.franzbecker.gradle-lombok' version '3.2.0'
+    id 'jacoco'
+    id 'java-library'
+    id 'maven-publish'
+    id 'org.sonarqube' version '2.7'
+}
+
+lombok {
+    version = "${lombokVersion}"
+}
+
+group = 'com.valtech.springframework.boot'
+version = '0.0.1-SNAPSHOT'
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from(components.java)
+        }
+    }
+}
+
+modifyPom {
+    project {
+        name 'spring-boot-starter-mqtt'
+        description 'Integrate MQTT into your spring boot project'
+        url 'https://github.com/kevinraddatz/spring-boot-starter-mqtt'
+        inceptionYear '2019'
+
+        scm {
+            url 'https://github.com/kevinraddatz/spring-boot-starter-mqtt'
+            connection 'scm:https://github.com/kevinraddatz/spring-boot-starter-qtt.git'
+            developerConnection 'scm:git@github.com:kevinraddatz/spring-boot-starter-mqtt.git'
+        }
+
+        licenses {
+            license {
+                name 'The Apache Software License, Version 2.0'
+                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution 'repo'
+            }
+        }
+
+        developers {
+            developer {
+                id 'kevinraddatz'
+                name 'Kevin Raddatz'
+                email 'kevin.raddatz@valtech-mobility.com'
+            }
+        }
+    }
+}
+
+extraArchive {
+    sources = true
+    tests = true
+    javadoc = true
+}
+
+nexus {
+    sign = true
+    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+    snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        html.enabled true
+    }
+}
+
+sonarqube {
+    def exclusions = [
+
+    ]
+    properties {
+        property 'sonar.coverage.exclusions', exclusions
+    }
+}
+
+compileJava.dependsOn(processResources)
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor group: 'org.springframework.boot', name: 'spring-boot-configuration-processor', version: "${springBootVersion}"
+
+    implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: "${mqttVersion}"
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter', version: "${springBootVersion}"
+
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: "${junitVersion}"
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: "${junitVersion}"
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: "${mockitoVersion}"
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: "${mockitoVersion}"
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: "${springBootVersion}"
+
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: "${junitVersion}"
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
